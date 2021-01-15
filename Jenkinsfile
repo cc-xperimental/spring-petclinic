@@ -14,10 +14,12 @@ pipeline {
       stages {
         stage ('Maven Build') {
           steps {
-            // retrieve app version
-            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
-            echo "app version: $appVersion"
-            sh './mvnw clean compile' + buildFlags
+            script {
+              // retrieve app version
+              appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+              echo "app version: $appVersion"
+              sh './mvnw clean compile' + buildFlags
+            }
           }
         }
         
