@@ -1,4 +1,7 @@
-def buildFlags = ' -Dcheckstyle.skip'
+def dockerHubCredentials = 'DH-cc-user+token'
+def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
+def orgName = 'cathychan' // docker hub org
+def repoName = 'petclinic' // docker hub repo
 def appVersion = null
 
 pipeline {
@@ -53,20 +56,17 @@ pipeline {
         }
         stage ('Docker build') {
           steps {
-            sh 'docker build -t cathychan/petclinic .'
+            sh "docker build -t ${orgName}/${repoName}:$appVersion ."
           }
         }
         stage ('Push image') {
           steps {
-            script {
-              def remoteName = "cathychan/petclinic:$appVersion"
-              // TODO: make sure docker credentials have been added to Jenkins
-              withCredentials([usernamePassword(credentialsId: 'DH-cc-user+token', passwordVariable: 'token', usernameVariable: 'username')]) {
-                sh """
-                  docker login -u $username -p $token
-                  docker tag cathychan/petclinic $remoteName && docker push $remoteName
-                """
-              }
+            // TODO: make sure docker credentials have been added to Jenkins
+            withCredentials([usernamePassword(credentialsId: dockerHubCredentials, passwordVariable: 'token', usernameVariable: 'username')]) {
+              sh """
+                docker login -u $username -p $token
+                docker push ${orgName}/${repoName} $remoteName
+              """
             }
           }
         }
