@@ -56,7 +56,7 @@ pipeline {
         }
         stage ('Docker build') {
           steps {
-            sh "docker build -t ${orgName}/${repoName}:$appVersion ."
+            sh "docker build -t ${orgName}/${repoName} ."
           }
         }
         stage ('Push image') {
@@ -65,7 +65,8 @@ pipeline {
             withCredentials([usernamePassword(credentialsId: dockerHubCredentials, passwordVariable: 'token', usernameVariable: 'username')]) {
               sh """
                 docker login -u $username -p $token
-                docker push ${orgName}/${repoName} $remoteName
+                docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+                docker push ${orgName}/${repoName}:${appVersion}
               """
             }
           }
