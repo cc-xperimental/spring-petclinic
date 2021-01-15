@@ -75,9 +75,11 @@ pipeline {
         sh """
           docker build -t ${orgName}/${repoName} .
           docker login -u ${DH_CREDS_USR} -p ${DH_CREDS_PSW}
+          # tag with app version and push
           docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
           docker push ${orgName}/${repoName}:${appVersion}
-          docker push ${orgName}/${repoName} // also push as latest
+          # also push as latest
+          docker push ${orgName}/${repoName}
         """
       }
     }
