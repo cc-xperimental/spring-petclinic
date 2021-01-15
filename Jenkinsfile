@@ -32,12 +32,11 @@ pipeline {
         branch 'main'
       }
       steps {
-        sh './mvnw package -DskipTests' + buildFlags
+        sh './mvnw package -DskipTests'
       }
       post {
         success {
           archive 'target/**.jar'
-          // TODO: replace by docker
         }
       }
     }
