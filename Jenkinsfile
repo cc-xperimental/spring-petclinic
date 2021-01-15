@@ -11,17 +11,16 @@ pipeline {
         }
       }
       stages {
-        stage ('Build') {
+        stage ('Maven Build') {
           steps {
             sh './mvnw clean compile' + buildFlags
           }
         }
         
-        stage ('Test') {
+        stage ('Maven Test') {
           steps {
             sh './mvnw test' + buildFlags
-          }
-          
+          }          
           post {
             always {
               junit 'target/**/*.xml'
@@ -32,17 +31,16 @@ pipeline {
     }
     
     stage ('Dockerize') {
-      // force package while testing
       // when {
       //   branch 'main'
       // }
       stages {
-        stage ('Package') {
+        stage ('Maven Package') {
           steps {
             sh './mvnw package -DskipTests' + buildFlags
           }
         }
-        stage ('Build image') {
+        stage ('Docker image') {
           steps {
             sh 'docker build -t cctest/petclinic .'
           }
