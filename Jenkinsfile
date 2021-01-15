@@ -86,7 +86,9 @@ pipeline {
   post {
     always {
       script {
-        sh 'docker rmi ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+        if (appVersion != null) {
+          def status = sh(script: 'docker rmi --force ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}', returnStatus: true) // ignore failure
+        }
         cleanWs()
       }
     }
