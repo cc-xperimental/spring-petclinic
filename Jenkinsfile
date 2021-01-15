@@ -31,9 +31,9 @@ pipeline {
     }
     
     stage ('Dockerize') {
-      // when {
-      //   branch 'main'
-      // }
+      when {
+        branch 'main'
+      }
       stages {
         stage ('Maven Package') {
           steps {
