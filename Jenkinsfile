@@ -15,7 +15,7 @@ pipeline {
         stage ('Maven Build') {
           steps {
             // retrieve app version
-            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\[]"', returnStdout: true)
+            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
             echo "app version: $appVersion"
             sh './mvnw clean compile' + buildFlags
           }
@@ -43,7 +43,7 @@ pipeline {
           steps {
             sh './mvnw package -DskipTests' + buildFlags
             // retrieve app version
-            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\[]"', returnStdout: true)
+            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
             echo "app version: $appVersion"
           }
         }
