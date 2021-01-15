@@ -7,70 +7,79 @@ def appVersion = null
 pipeline {
   agent any
   stages {
-    stage ('Build and Test') {
+    stage ('Build') {
       agent {
         docker {
           image 'openjdk:8-jdk-alpine'
           args '-v /root/.m2:/root/.m2'
+          reuseNode true
         }
       }
-      stages {
-        stage ('Maven Build') {
-          steps {
-            script {
-              sh './mvnw clean compile' + buildFlags
-              // retrieve app version
-              // TODO: are there better ways??
-              // HACK: run the command a first time to get all downloads done,
-              // then run it a second time for the output
-              sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
-              appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
-              echo "app version: $appVersion"
-            }
-          }
-        }
-        
-        stage ('Maven Test') {
-          steps {
-            sh './mvnw test' + buildFlags
-          }          
-          post {
-            always {
-              junit 'target/**/*.xml'
-            }
-          }
+      steps {
+        script {
+          sh './mvnw clean compile' + buildFlags
+          // retrieve app version
+          // TODO: are there better ways??
+          // HACK: run the command a first time to get all downloads done,
+          // then run it a second time for the output
+          sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
+          appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+          echo "app version: $appVersion"
         }
       }
     }
     
+    stage ('Test') {
+      agent {
+        docker {
+          image 'openjdk:8-jdk-alpine'
+          args '-v /root/.m2:/root/.m2'
+          reuseNode true
+        }
+      }
+      steps {
+        sh './mvnw test' + buildFlags
+      }          
+      post {
+        always {
+          junit 'target/**/*.xml'
+        }
+      }
+    }
+    
+    stage ('Package') {
+      // TODO: revert test change
+      // when {
+      //  branch 'main'
+      //}
+      agent {
+        docker {
+          image 'openjdk:8-jdk-alpine'
+          args '-v /root/.m2:/root/.m2'
+          reuseNode true
+        }
+      }
+      steps {
+        sh './mvnw package -DskipTests' + buildFlags
+      }
+    }
+
     stage ('Dockerize') {
       // TODO: revert test change
       // when {
       //  branch 'main'
       //}
-      stages {
-        stage ('Maven Package') {
-          steps {
-            sh './mvnw package -DskipTests' + buildFlags
-          }
-        }
-        stage ('Docker build') {
-          steps {
-            sh "docker build -t ${orgName}/${repoName} ."
-          }
-        }
-        stage ('Push image') {
-          steps {
-            // TODO: make sure docker credentials have been added to Jenkins
-            withCredentials([usernamePassword(credentialsId: dockerHubCredentials, passwordVariable: 'token', usernameVariable: 'username')]) {
-              sh """
-                docker login -u $username -p $token
-                docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
-                docker push ${orgName}/${repoName}:${appVersion}
-                docker push ${orgName}/${repoName}
-              """
-            }
-          }
+      steps {
+        sh "docker build -t ${orgName}/${repoName} ."
+
+        // TODO: make sure docker credentials have been added to Jenkins
+        withCredentials([usernamePassword(credentialsId: dockerHubCredentials, passwordVariable: 'token', usernameVariable: 'username')]) {
+          sh """
+            docker login -u $username -p $token
+            docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+            docker push ${orgName}/${repoName}:${appVersion}
+            docker push ${orgName}/${repoName}
+          """
         }
       }
     }
