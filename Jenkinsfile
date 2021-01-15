@@ -27,7 +27,7 @@ pipeline {
     
     stage ('Package') {
       when {
-        branch: 'main'
+        branch 'main'
       }
       steps {
         sh './mvnw package'
