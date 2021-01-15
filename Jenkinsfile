@@ -73,6 +73,7 @@ pipeline {
       steps {
         unstash 'app'
         sh '''
+          docker login -u ${DH_CREDS_USR} -p ${DH_CREDS_PSW}
           docker build --force-rm -t ${orgName}/${repoName} .
           # tag with app version and push
           docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
@@ -86,7 +87,7 @@ pipeline {
   post {
     always {
       script {
-        if (appVersion != null) {
+        if (env.BRANCH_NAME = 'master') {
           def status = sh(script: 'docker rmi --force ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}', returnStatus: true) // ignore failure
         }
         cleanWs()
