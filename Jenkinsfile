@@ -43,10 +43,12 @@ pipeline {
       stages {
         stage ('Maven Package') {
           steps {
-            sh './mvnw package -DskipTests' + buildFlags
-            // retrieve app version
-            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
-            echo "app version: $appVersion"
+            script {
+              sh './mvnw package -DskipTests' + buildFlags
+              // retrieve app version
+              appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+              echo "app version: $appVersion"
+            }
           }
         }
         stage ('Docker build') {
