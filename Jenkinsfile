@@ -67,6 +67,7 @@ pipeline {
                 docker login -u $username -p $token
                 docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
                 docker push ${orgName}/${repoName}:${appVersion}
+                docker push ${orgName}/${repoName}
               """
             }
           }
