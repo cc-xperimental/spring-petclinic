@@ -1,4 +1,3 @@
-def dockerHubCredentials = 'DH-cc-user+token' // make sure this is in Jenkins
 def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
 def orgName = 'cathychan' // docker hub org
 def repoName = 'petclinic' // docker hub repo
@@ -7,7 +6,7 @@ def appVersion = null
 pipeline {
   agent any
   environment {
-    DH_CREDS = credentials(dockerHubCredentials)
+    DH_CREDS = credentials('DH-cc-user+token') // make sure this is in Jenkins
   }
   stages {
     stage ('Build') {
