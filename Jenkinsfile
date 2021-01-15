@@ -49,11 +49,10 @@ pipeline {
       }
     }
     
-    stage ('Package') {
-      // TODO: revert test change
-      // when {
-      //  branch 'main'
-      //}
+    stage ('Package for master') {
+      when {
+        branch 'master'
+      }
       agent {
         docker {
           image 'openjdk:8-jdk-alpine'
@@ -67,11 +66,10 @@ pipeline {
       }
     }
 
-    stage ('Dockerize') {
-      // TODO: revert test change
-      // when {
-      //  branch 'main'
-      //}
+    stage ('Dockerize for master') {
+      when {
+        branch 'master'
+      }
       steps {
         unstash 'app'
         sh '''
