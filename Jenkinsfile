@@ -66,6 +66,7 @@ pipeline {
                   docker login -u $username -p $token
                   docker tag cathychan/petclinic $remoteName && docker push $remoteName
                 """
+              }
             }
           }
         }
