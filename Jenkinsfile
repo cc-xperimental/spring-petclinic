@@ -32,7 +32,7 @@ pipeline {
         branch 'main'
       }
       steps {
-        sh './mvnw package -DskipTests'
+        sh './mvnw package -DskipTests' + buildFlags
       }
       post {
         success {
