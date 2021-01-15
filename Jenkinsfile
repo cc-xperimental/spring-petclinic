@@ -73,13 +73,21 @@ pipeline {
       steps {
         unstash 'app'
         sh '''
-          docker build -t ${orgName}/${repoName} .
+          docker build --force-rm -t ${orgName}/${repoName} .
           # tag with app version and push
           docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
           docker push ${orgName}/${repoName}:${appVersion}
           # also push as latest
           docker push ${orgName}/${repoName}
         '''
+      }
+    }
+  }
+  post {
+    always {
+      script {
+        sh 'docker rmi ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+        cleanWs()
       }
     }
   }
