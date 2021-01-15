@@ -26,16 +26,17 @@ pipeline {
     }
     
     stage ('Package') {
-      when {
-        branch 'main'
-      }
+// TODO: For testing
+//      when {
+//        branch 'main'
+//      }
       steps {
         sh './mvnw package'
+        sh 'docker build -t cctest .'
       }
       post {
         success {
           archive 'target/**.jar'
-          // TODO: replace by docker
         }
       }
     }
