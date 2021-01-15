@@ -63,6 +63,7 @@ pipeline {
       }
       steps {
         sh './mvnw package -DskipTests' + buildFlags
+        stash includes: '**/target/*.jar', name: 'app'
       }
     }
 
@@ -72,6 +73,7 @@ pipeline {
       //  branch 'main'
       //}
       steps {
+        unstash 'app'
         sh '''
           docker build -t ${orgName}/${repoName} .
           # tag with app version and push
