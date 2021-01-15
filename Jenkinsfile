@@ -1,3 +1,5 @@
+def buildFlags = ' -Dcheckstyle.skip'
+
 pipeline {
   agent {
     docker {
@@ -9,13 +11,13 @@ pipeline {
   stages {
     stage ('Build') {
       steps {
-        sh './mvnw clean compile -Dcheckstyle.skip' // TODO: address checkstyle 
+        sh './mvnw clean compile' + buildFlags
       }
     }
     
     stage ('Test') {
       steps {
-        sh './mvnw test'
+        sh './mvnw test' + buildFlags
       }
       
       post {
@@ -30,7 +32,7 @@ pipeline {
         branch 'main'
       }
       steps {
-        sh './mvnw package'
+        sh './mvnw package' + buildFlags
       }
       post {
         success {
