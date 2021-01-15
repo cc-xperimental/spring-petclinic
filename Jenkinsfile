@@ -63,9 +63,11 @@ pipeline {
         }
         stage ('Push image') {
           steps {
-            def remoteName = "cathychan/petclinic:$appVersion"
-            // TODO: make sure docker credentials have been added to Jenkins
-            sh "docker tag cathychan/petclinic $remoteName && docker push $remoteName"
+            script {
+              def remoteName = "cathychan/petclinic:$appVersion"
+              // TODO: make sure docker credentials have been added to Jenkins
+              sh "docker tag cathychan/petclinic $remoteName && docker push $remoteName"
+            }
           }
         }
       }
