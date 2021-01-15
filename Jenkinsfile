@@ -48,12 +48,7 @@ pipeline {
       stages {
         stage ('Maven Package') {
           steps {
-            script {
-              // retrieve app version
-              appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
-              echo "app version: $appVersion"
-              sh './mvnw package -DskipTests' + buildFlags
-            }
+            sh './mvnw package -DskipTests' + buildFlags
           }
         }
         stage ('Docker build') {
@@ -66,7 +61,11 @@ pipeline {
             script {
               def remoteName = "cathychan/petclinic:$appVersion"
               // TODO: make sure docker credentials have been added to Jenkins
-              sh "docker tag cathychan/petclinic $remoteName && docker push $remoteName"
+              withCredentials([usernamePassword(credentialsId: 'DH-cc-user+token', passwordVariable: 'token', usernameVariable: 'username')]) {
+                sh """
+                  docker login -u $username -p $token
+                  docker tag cathychan/petclinic $remoteName && docker push $remoteName
+                """
             }
           }
         }
