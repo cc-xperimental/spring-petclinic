@@ -1,12 +1,12 @@
 def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
-def orgName = 'cathychan' // docker hub org
-def repoName = 'petclinic' // docker hub repo
-def appVersion = null
 
 pipeline {
   agent any
   environment {
     DH_CREDS = credentials('DH-cc-user+token') // make sure this is in Jenkins
+    orgName = 'cathychan' // docker hub org
+    repoName = 'petclinic' // docker hub repo
+    appVersion = null
   }
   stages {
     stage ('Build') {
@@ -72,15 +72,14 @@ pipeline {
       //  branch 'main'
       //}
       steps {
-        sh """
+        sh '''
           docker build -t ${orgName}/${repoName} .
-          docker login -u ${DH_CREDS_USR} -p ${DH_CREDS_PSW}
           # tag with app version and push
           docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
           docker push ${orgName}/${repoName}:${appVersion}
           # also push as latest
           docker push ${orgName}/${repoName}
-        """
+        '''
       }
     }
   }
