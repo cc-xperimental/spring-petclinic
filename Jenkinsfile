@@ -1,50 +1,85 @@
-def buildFlags = ' -Dcheckstyle.skip'
+def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
 
 pipeline {
   agent any
+  environment {
+    DH_CREDS = credentials('DH-cc-user+token') // make sure this is in Jenkins
+    orgName = 'cathychan' // docker hub org
+    repoName = 'petclinic' // docker hub repo
+    appVersion = null
+  }
   stages {
-    stage ('Build and Test') {
+    stage ('Build') {
       agent {
         docker {
           image 'openjdk:8-jdk-alpine'
           args '-v /root/.m2:/root/.m2'
+          reuseNode true
         }
       }
-      stages {
-        stage ('Maven Build') {
-          steps {
-            sh './mvnw clean compile' + buildFlags
-          }
-        }
-        
-        stage ('Maven Test') {
-          steps {
-            sh './mvnw test' + buildFlags
-          }          
-          post {
-            always {
-              junit 'target/**/*.xml'
-            }
-          }
+      steps {
+        script {
+          sh './mvnw clean compile' + buildFlags
+          // retrieve app version
+          // TODO: are there better ways??
+          // HACK: run the command a first time to get all downloads done,
+          // then run it a second time for the output
+          sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
+          appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+          echo "app version: $appVersion"
         }
       }
     }
     
-    stage ('Dockerize') {
-      when {
-        branch 'main'
+    stage ('Test') {
+      agent {
+        docker {
+          image 'openjdk:8-jdk-alpine'
+          args '-v /root/.m2:/root/.m2'
+          reuseNode true
+        }
       }
-      stages {
-        stage ('Maven Package') {
-          steps {
-            sh './mvnw package -DskipTests' + buildFlags
-          }
+      steps {
+        sh './mvnw test' + buildFlags
+      }          
+      post {
+        always {
+          junit 'target/**/*.xml'
         }
-        stage ('Docker image') {
-          steps {
-            sh 'docker build -t cctest/petclinic .'
-          }
+      }
+    }
+    
+    stage ('Package for master') {
+      when {
+        branch 'master'
+      }
+      agent {
+        docker {
+          image 'openjdk:8-jdk-alpine'
+          args '-v /root/.m2:/root/.m2'
+          reuseNode true
         }
+      }
+      steps {
+        sh './mvnw package -DskipTests' + buildFlags
+        stash includes: '**/target/*.jar', name: 'app'
+      }
+    }
+
+    stage ('Dockerize for master') {
+      when {
+        branch 'master'
+      }
+      steps {
+        unstash 'app'
+        sh '''
+          docker build -t ${orgName}/${repoName} .
+          # tag with app version and push
+          docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+          docker push ${orgName}/${repoName}:${appVersion}
+          # also push as latest
+          docker push ${orgName}/${repoName}
+        '''
       }
     }
   }
