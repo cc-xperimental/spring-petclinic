@@ -1,4 +1,4 @@
-def dockerHubCredentials = 'DH-cc-user+token'
+def dockerHubCredentials = 'DH-cc-user+token' // make sure this is in Jenkins
 def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
 def orgName = 'cathychan' // docker hub org
 def repoName = 'petclinic' // docker hub repo
@@ -6,6 +6,9 @@ def appVersion = null
 
 pipeline {
   agent any
+  environment {
+    DH_CREDS = credentials(dockerHubCredentials)
+  }
   stages {
     stage ('Build') {
       agent {
@@ -70,17 +73,13 @@ pipeline {
       //  branch 'main'
       //}
       steps {
-        sh "docker build -t ${orgName}/${repoName} ."
-
-        // TODO: make sure docker credentials have been added to Jenkins
-        withCredentials([usernamePassword(credentialsId: dockerHubCredentials, passwordVariable: 'token', usernameVariable: 'username')]) {
-          sh """
-            docker login -u $username -p $token
-            docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
-            docker push ${orgName}/${repoName}:${appVersion}
-            docker push ${orgName}/${repoName}
-          """
-        }
+        sh """
+          docker build -t ${orgName}/${repoName} .
+          docker login -u ${DH_CREDS_USR} -p ${DH_CREDS_PSW}
+          docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+          docker push ${orgName}/${repoName}:${appVersion}
+          docker push ${orgName}/${repoName} // also push as latest
+        """
       }
     }
   }
