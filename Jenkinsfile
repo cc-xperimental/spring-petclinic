@@ -33,7 +33,7 @@ pipeline {
       //   branch 'main'
       // }
       steps {
-        sh './mvnw package' + buildFlags
+        sh './mvnw package -DskipTests' + buildFlags
         sh 'docker build -t cctest/cctest .'
       }
       post {
