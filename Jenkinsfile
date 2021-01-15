@@ -1,4 +1,5 @@
 def buildFlags = ' -Dcheckstyle.skip'
+def appVersion = null
 
 pipeline {
   agent any
@@ -13,6 +14,9 @@ pipeline {
       stages {
         stage ('Maven Build') {
           steps {
+            // retrieve app version
+            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\[]"', returnStdout: true)
+            echo "app version: $appVersion"
             sh './mvnw clean compile' + buildFlags
           }
         }
@@ -38,11 +42,19 @@ pipeline {
         stage ('Maven Package') {
           steps {
             sh './mvnw package -DskipTests' + buildFlags
+            // retrieve app version
+            appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\[]"', returnStdout: true)
+            echo "app version: $appVersion"
           }
         }
-        stage ('Docker image') {
+        stage ('Docker build') {
           steps {
             sh 'docker build -t cctest/petclinic .'
+          }
+        }
+        stage ('Push image') {
+          steps {
+            echo "TBA"
           }
         }
       }
