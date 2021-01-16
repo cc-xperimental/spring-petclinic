@@ -84,7 +84,7 @@ pipeline {
     always {
       script {
         if (env.BRANCH_NAME == 'master') {
-          def status = sh(script: 'docker rmi --force ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}', returnStatus: true) // ignore failure
+          def status = sh(script: "docker rmi --force ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}", returnStatus: true) // ignore failure
         }
         cleanWs()
       }
