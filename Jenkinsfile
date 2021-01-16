@@ -95,7 +95,7 @@ pipeline {
         if (env.BRANCH_NAME == 'master') {
           def status = sh(script: "docker rmi --force ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}", returnStatus: true) // ignore failure
         }
-        cleanWs()
+        // cleanWs() // makes every build start from scratch and much slower
       }
     }
   }
