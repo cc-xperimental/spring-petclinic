@@ -24,9 +24,7 @@ pipeline {
         }
       }
       steps {
-        script {
-          sh './mvnw clean compile' + buildFlags
-        }
+        sh './mvnw clean compile' + buildFlags
       }
     }
     
@@ -60,15 +58,17 @@ pipeline {
         }
       }
       steps {
-        sh './mvnw package -DskipTests' + buildFlags
-        // retrieve app version
-        // TODO: are there better ways??
-        // HACK: run the command a first time to get all downloads done,
-        // then run it a second time for the output
-        sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
-        appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
-        echo "app version: $appVersion"
-        stash includes: '**/target/*.jar', name: 'app'
+        script {
+          sh './mvnw package -DskipTests' + buildFlags
+          // retrieve app version
+          // TODO: are there better ways??
+          // HACK: run the command a first time to get all downloads done,
+          // then run it a second time for the output
+          sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
+          appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+          echo "app version: $appVersion"
+          stash includes: '**/target/*.jar', name: 'app'
+        }
       }
     }
 
