@@ -4,7 +4,16 @@ def repoName = 'petclinic' // docker hub repo
 def appVersion = null
 
 pipeline {
+
   agent any
+
+  options {
+    timestamps() // print timestamps in console log
+    buildDiscarder(logRotator(
+      daysToKeepStr: "30"
+    ))
+  }
+  
   stages {
     stage ('Build') {
       agent {
