@@ -48,9 +48,7 @@ pipeline {
     
     stage ('Package for master') {
       when {
-        // TODO: fix
-        // branch 'master'
-        branch 'dockerfile-on-the-fly'
+        branch 'master'
       }
       agent {
         docker {
@@ -76,9 +74,7 @@ pipeline {
 
     stage ('Dockerize for master') {
       when {
-        // TODO: fix
-        // branch 'master'
-        branch 'dockerfile-on-the-fly'
+        branch 'master'
       }
       steps {
         unstash 'app'
