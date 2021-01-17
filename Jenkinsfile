@@ -67,7 +67,7 @@ pipeline {
           sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
           appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
           echo "app version: $appVersion"
-          stash includes: '**/target/*.jar', name: 'app'
+          stash includes: 'target/*.jar', name: 'app'
         }
       }
     }
