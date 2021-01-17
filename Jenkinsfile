@@ -18,26 +18,26 @@ pipeline {
     stage ('Build') {
       agent {
         docker {
-          image 'openjdk:8-jdk-alpine'
+          image 'maven:3-alpine'
           args '-v /root/.m2:/root/.m2'
           reuseNode true
         }
       }
       steps {
-        sh './mvnw clean compile' + buildFlags
+        sh 'mvn clean compile' + buildFlags
       }
     }
     
     stage ('Test') {
       agent {
         docker {
-          image 'openjdk:8-jdk-alpine'
+          image 'maven:3-alpine'
           args '-v /root/.m2:/root/.m2'
           reuseNode true
         }
       }
       steps {
-        sh './mvnw test' + buildFlags
+        sh 'mvn test' + buildFlags
       }          
       post {
         always {
@@ -52,20 +52,20 @@ pipeline {
       }
       agent {
         docker {
-          image 'openjdk:8-jdk-alpine'
+          image 'maven:3-alpine'
           args '-v /root/.m2:/root/.m2'
           reuseNode true
         }
       }
       steps {
         script {
-          sh './mvnw package -DskipTests' + buildFlags
+          sh 'mvn package -DskipTests' + buildFlags
           // retrieve app version
           // TODO: are there better ways??
           // HACK: run the command a first time to get all downloads done,
           // then run it a second time for the output
-          sh './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
-          appVersion = sh(script: './mvnw help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
+          sh 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"'
+          appVersion = sh(script: 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"', returnStdout: true)
           echo "app version: $appVersion"
           stash includes: 'target/*.jar', name: 'app'
         }
