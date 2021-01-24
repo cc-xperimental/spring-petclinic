@@ -1,4 +1,8 @@
 def buildFlags = ' -Dcheckstyle.skip' // somehow checkstyle always fails, so skip
+
+// the following credential needs to be created in Jenkins
+def dockerHubCredentialsId = 'DH-cc-user-token'
+
 def orgName = 'cathychan' // docker hub org
 def repoName = 'petclinic' // docker hub repo
 def appVersion = null
@@ -88,14 +92,16 @@ pipeline {
         |ENTRYPOINT ["java","-jar","/app.jar"]
         |'''. stripMargin())
         
-        sh """
-          docker build --force-rm -t ${orgName}/${repoName} .
-          # tag with app version and push
-          docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
-          docker push ${orgName}/${repoName}:${appVersion}
-          # also push as latest
-          docker push ${orgName}/${repoName}
-        """
+        withDockerRegistry([credentialsId: dockerHubCredentialsId, url: '']) {
+          sh """
+            docker build --force-rm -t ${orgName}/${repoName} .
+            # tag with app version and push
+            docker tag ${orgName}/${repoName} ${orgName}/${repoName}:${appVersion}
+            docker push ${orgName}/${repoName}:${appVersion}
+            # also push as latest
+            docker push ${orgName}/${repoName}
+          """
+        }
       }
     }
   }
