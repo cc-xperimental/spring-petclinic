@@ -36,7 +36,9 @@ public class Person extends BaseEntity {
 	private String lastName;
 
 	public String getFirstName() {
-		return this.firstName;
+		// fake code logic error
+		return "Oops hard-coded first name";
+		// return this.firstName;
 	}
 
 	public void setFirstName(String firstName) {
